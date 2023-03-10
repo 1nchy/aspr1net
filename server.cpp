@@ -45,6 +45,7 @@ static void read_event_handler(ae_event_loop* _l, int _fd, void* _d, int _mask) 
     }
     server_t::process_input_buffer(_c);
     _l->add_file_event(_c->_fd, AE_WRITABLE, write_event_handler, _c);
+    return;
 
 err:
     delete _c;
@@ -67,6 +68,13 @@ static void accept_tcp_handler(ae_event_loop* _l, int _fd, void* _d, int _mask) 
         }
     }
 }
+
+// const std::unordered_map<const char*, command_t> _s_command_table = {
+const std::unordered_map<std::string, command_t> server_t::_s_command_table = {
+    {"ping", {command::ping_command, 1}},
+    {"get", {command::get_command, 2}},
+    {"set", {command::set_command, 3}},
+};
 
 // class implement
 server_t::server_t() {
@@ -96,10 +104,34 @@ void server_t::process_input_buffer(client_t* _c) {
 }
 void server_t::process_command(client_t* _c) {
     ASP_LOG("client input: %s\n", _c->_r_buffer._buff);
-    for (int i = 0; i < _c->_arg.argc(); ++i) {
-        ASP_LOG("argv[%d] = %s\n", i, _c->_arg.argv(i).c_str());
+    // for (int i = 0; i < _c->_arg.argc(); ++i) {
+    //     ASP_LOG("argv[%d] = %s\n", i, _c->_arg.argv(i).c_str());
+    // }
+
+    auto _it = server_t::_s_command_table.find(_c->_arg.argv(0));
+    if (_it == server_t::_s_command_table.end()) {
+        ASP_ERR("error in command: <%s> not found.", _c->_arg.argv(0).c_str());
+        return;
     }
-    _c->_w_buffer.write("nice 2 meet u.");
+    const command_t& _command_detail = _it->second;
+    // check arity
+    if (_command_detail._arity > 0) {
+        if (_c->_arg.argc() != _command_detail._arity) {
+            goto command_arity_err;
+        }
+    }
+    else {
+        if (_c->_arg.argc() < _command_detail._arity) {
+            goto command_arity_err;
+        }
+    }
+
+    // invoke
+    _command_detail._proc(_c);
+    return;
+
+command_arity_err:
+    ASP_ERR("error in command: <%s> not found.", _c->_arg.argv(0).c_str());
 }
 
 
@@ -110,3 +142,18 @@ server_t::client_t::~client_t() {
         close(_fd);
     }
 }
+
+
+
+// command table implement
+namespace command {
+void ping_command(server_t::client_t* _c) {
+    _c->_w_buffer.write("pong.");
+}
+void get_command(server_t::client_t* _c) {
+
+}
+void set_command(server_t::client_t* _c) {
+
+}
+};

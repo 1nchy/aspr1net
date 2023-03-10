@@ -22,8 +22,12 @@ DEPS=$(patsubst $(SRC_DIR)/%.$(EXTENSION), $(DEPS_DIR)/%.d, $(SRCS))
 ## compile target
 .PHONY: all clean rebuild
 
-all:$(OBJS)
+all:srv cli
+
+srv:$(OBJS)
 	$(CC) $(CFLAGS) -o $(SERVER_PROGRAM) $(SRCS) server_main.cpp
+
+cli:$(OBJS)
 	$(CC) $(CFLAGS) -o $(CLIENT_PROGRAM) $(SRCS) client_main.cpp
 
 # $(DEPS_DIR)/%.d: $(SRC_DIR)/%.$(EXTENSION)

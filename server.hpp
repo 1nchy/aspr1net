@@ -5,8 +5,11 @@
 #include "arguments.hpp"
 #include "buffer.hpp"
 
+#include <string>
+#include <unordered_map>
+
 struct server_t;
-// struct client_t;
+struct command_t;
 
 static void write_event_handler(ae_event_loop* _l, int _fd, void* _d, int _mask);
 static void read_event_handler(ae_event_loop* _l, int _fd, void* _d, int _mask);
@@ -20,6 +23,8 @@ struct server_t {
     int _max_client_count;
     ae_event_loop* _loop = nullptr;
     char _err_info[1024];
+
+    static const std::unordered_map<std::string, command_t> _s_command_table;
 
 public:
     server_t();
@@ -50,5 +55,18 @@ public:
 };
 };
 
+// command table
+typedef void command_proc_t(server_t::client_t* _c);
+struct command_t {
+    // char* _name; // name of command
+    command_proc_t* _proc; // implement of command
+    int _arity; // number of argument (!= 0) (+n: argc = n; -n: argc >= n)
+};
+// extern const std::unordered_map<const char*, command_t> _s_command_table;
+namespace command {
+void ping_command(server_t::client_t* _c);
+void get_command(server_t::client_t* _c);
+void set_command(server_t::client_t* _c);
+};
 
 #endif // _ASP_SERVER_HPP_
