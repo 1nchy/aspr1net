@@ -51,7 +51,6 @@ struct client_t {
 public:
     client_t() = default;
     virtual ~client_t();
-    void process_buffer();
 };
 };
 
