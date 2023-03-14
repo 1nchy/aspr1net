@@ -3,6 +3,11 @@
 
 #include <cstdlib>
 
+enum content_t : int {
+    k_string,
+    k_file,
+};
+
 struct package_head_t {
     size_t _length;
 } __attribute__((packed));

@@ -59,6 +59,7 @@ int ae_epoll_state::add_event(int _fd, int _mask) {
     if (_mask & AE_WRITABLE) {
         _ee.events |= EPOLLOUT;
     }
+    // _ee.events |= EPOLLET;
     _ee.data.fd = _fd;
     int _op = EPOLL_CTL_ADD;
     if (epoll_ctl(this->_epoll_fd, _op, _fd, &_ee) == -1) {

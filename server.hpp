@@ -7,6 +7,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <memory>
 
 struct server_t;
 struct command_t;
@@ -36,6 +37,9 @@ public:
     friend void read_event_handler(ae_event_loop* _l, int _fd, void* _d, int _mask);
     friend void accept_tcp_handler(ae_event_loop* _l, int _fd, void* _d, int _mask);
 
+protected:
+    void recv(int _fd);
+
 private:
     static void process_input_buffer(client_t* _c);
     static void process_command(client_t* _c);
@@ -45,12 +49,15 @@ struct client_t {
     int _fd = -1;
     buffer_t _r_buffer;
     buffer_t _w_buffer;
+    std::list<std::shared_ptr<buffer_t>> _buffer_list;
     ae_event_loop* _loop = nullptr;
     arg_t _arg;
 
 public:
     client_t() = default;
     virtual ~client_t();
+    int recv();
+    size_t recv_integer();
 };
 };
 
@@ -66,6 +73,8 @@ namespace command {
 void ping_command(server_t::client_t* _c);
 void get_command(server_t::client_t* _c);
 void set_command(server_t::client_t* _c);
+void file_send_command(server_t::client_t* _c);
+void file_recv_command(server_t::client_t* _c);
 };
 
 #endif // _ASP_SERVER_HPP_

@@ -46,6 +46,11 @@ void buffer_t::extend(size_t _ext_size) {
         _size = _new_size;
     }
 }
+void buffer_t::ending() {
+    if (writeable_size() != 0) {
+        _buff[_write_idx] = '\0';
+    }
+}
 void buffer_t::reset() {
     _write_idx = 0;
     _read_idx = 0;
@@ -62,4 +67,24 @@ void buffer_t::write(const char* _s) {
     memcpy(_buff + _write_idx, _s, _head._length);
     _write_idx += _head._length;
     _buff[_write_idx] = '\0';
+}
+void buffer_t::write(size_t _n) {
+    reset();
+    package_head_t _head;
+    _head._length = sizeof(size_t);
+    memcpy(_buff, &_head, sizeof(package_head_t));
+    _write_idx += sizeof(package_head_t);
+    if (_head._length + 1 > writeable_size()) {
+        extend(_head._length + 1 - writeable_size());
+    }
+    *((size_t*)package_buff()) = _n;
+    _write_idx += _head._length;
+    _buff[_write_idx] = '\0';
+}
+
+char* buffer_t::package_buff() const {
+    return _buff + sizeof(package_head_t);
+}
+int buffer_t::package_size() const {
+    return _size - sizeof(package_head_t) - 1;
 }

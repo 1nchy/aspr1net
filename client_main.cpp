@@ -6,9 +6,10 @@
 int main(void) {
     client_t _c;
     _c.connect("127.0.0.1", DEFAULT_LISTEN_PORT);
-    _c.write("ping");
+    // _c.send("ping");
     // _c.write("hello from outside.");
-    _c.read();
-    ASP_LOG("reply: %s\n", _c._r_buffer._buff);
+    // _c.recv();
+    // _c.file_recv("client-abc.txt");
+    _c.file_send("client-wyq.md");
     return 0;
 }
