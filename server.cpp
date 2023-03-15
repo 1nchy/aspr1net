@@ -127,6 +127,7 @@ size_t server_t::client_t::recv_integer() {
 // private implement
 void server_t::process_input_buffer(client_t* _c) {
     _c->_arg.process(_c->_r_buffer._buff);
+    // _c->_arg.process(std::string(_c->_r_buffer._buff, _c->_r_buffer.readable_size()));
 }
 void server_t::process_command(ae_event_loop* _l, client_t* _c) {
     ASP_LOG("client input: %s\n", _c->_r_buffer._buff);

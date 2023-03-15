@@ -88,6 +88,7 @@ int client_t::process(const char* _command_str) {
     _r_buffer.reset();
     _buffer_list.clear();
     _arg.process(_command_str);
+    // _arg.process(std::string(_command_str));
     auto _it = client_t::_s_command_table.find(_arg.argv(0));
     if (_it == client_t::_s_command_table.end()) {
         ASP_ERR("error in command: <%s> not found.", _arg.argv(0).c_str());

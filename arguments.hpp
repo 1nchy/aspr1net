@@ -25,9 +25,7 @@ struct arg_t {
     const std::string& argv(size_t _i) const { return _argv[_i]; }
     void process(const char* _s) {
         reset();
-        if (_s == nullptr) {
-            return;
-        }
+        if (_s == nullptr) { return; }
         const char* _p = _s;
         while (1) {
             while (*_p && isspace(*_p)) {
@@ -49,6 +47,44 @@ struct arg_t {
                     _done = true; break;
                 case '\\':
                     if (*(_p+1) == ' ') {
+                        _space_arg += std::string(_top, _p);
+                        ++_p;
+                        _top = _p;
+                    }
+                default:
+                    ++_p;
+                }
+            }
+            if (_space_arg.empty()) {
+                _argv.emplace_back(_top, _p);
+            }
+            else {
+                _argv.push_back(_space_arg + std::string(_top, _p));
+            }
+        }
+    }
+    void process(const std::string& _s) {
+        reset();
+        if (_s.empty()) { return; }
+        auto _p = _s.cbegin();
+        while (1) {
+            while (_p != _s.cend() && isspace(*_p)) {
+                ++_p;
+            }
+            if (_p == _s.cend()) { return; }
+            auto _top = _p;
+            bool _done = false;
+            std::string _space_arg;
+            while (!_done && _p != _s.cend()) {
+                switch (*_p) {
+                case ' ':
+                case '\n':
+                case '\r':
+                case '\t':
+                case '\0':
+                    _done = true; break;
+                case '\\':
+                    if (_p+1 != _s.cend() && *(_p+1) == ' ') {
                         _space_arg += std::string(_top, _p);
                         ++_p;
                         _top = _p;
