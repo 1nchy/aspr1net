@@ -50,7 +50,7 @@ static void read_event_handler(ae_event_loop* _l, int _fd, void* _d, int _mask) 
         goto err;
     }
     server_t::process_input_buffer(_c);
-    _l->add_file_event(_c->_fd, AE_WRITABLE, write_event_handler, _c);
+    server_t::process_command(_l, _c);
     return;
 
 err:
@@ -77,11 +77,11 @@ static void accept_tcp_handler(ae_event_loop* _l, int _fd, void* _d, int _mask) 
 
 // const std::unordered_map<const char*, command_t> _s_command_table = {
 const std::unordered_map<std::string, command_t> server_t::_s_command_table = {
-    {"ping", {command::ping_command, 1}},
-    {"get", {command::get_command, 2}},
-    {"set", {command::set_command, 3}},
-    {"file_send", {command::file_send_command, 2}},
-    {"file_recv", {command::file_recv_command, 2}},
+    {"ping", {command::ping_command, 1, 1}},
+    {"get", {command::get_command, 2, 1}},
+    {"set", {command::set_command, 3, 1}},
+    {"file_send", {command::file_send_command, 2, 0}},
+    {"file_recv", {command::file_recv_command, 2, 1}},
 };
 
 // class implement
@@ -127,9 +127,8 @@ size_t server_t::client_t::recv_integer() {
 // private implement
 void server_t::process_input_buffer(client_t* _c) {
     _c->_arg.process(_c->_r_buffer._buff);
-    server_t::process_command(_c);
 }
-void server_t::process_command(client_t* _c) {
+void server_t::process_command(ae_event_loop* _l, client_t* _c) {
     ASP_LOG("client input: %s\n", _c->_r_buffer._buff);
     // for (int i = 0; i < _c->_arg.argc(); ++i) {
     //     ASP_LOG("argv[%d] = %s\n", i, _c->_arg.argv(i).c_str());
@@ -152,13 +151,17 @@ void server_t::process_command(client_t* _c) {
             goto command_arity_err;
         }
     }
+    
+    if (_command_detail._reply) {
+        _l->add_file_event(_c->_fd, AE_WRITABLE, write_event_handler, _c);
+    }
 
     // invoke
     _command_detail._proc(_c);
     return;
 
 command_arity_err:
-    ASP_ERR("error in command: <%s> not found.", _c->_arg.argv(0).c_str());
+    ASP_ERR("error in command: <%s> arity error.", _c->_arg.argv(0).c_str());
 }
 
 
@@ -240,5 +243,8 @@ void file_recv_command(server_t::client_t* _c) {
     _c->_w_buffer.write(_c->_buffer_list.size());
     ASP_LOG("write_buffer: %s",_c->_w_buffer._buff);
     fclose(_input_file);
+}
+void done_command(server_t::client_t* _c) {
+    _c->_w_buffer.write("done.");
 }
 };

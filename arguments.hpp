@@ -38,6 +38,7 @@ struct arg_t {
                 return;
             }
             bool _done = false;
+            std::string _space_arg;
             while (!_done) {
                 switch (*_p) {
                 case ' ':
@@ -46,11 +47,22 @@ struct arg_t {
                 case '\t':
                 case '\0':
                     _done = true; break;
+                case '\\':
+                    if (*(_p+1) == ' ') {
+                        _space_arg += std::string(_top, _p);
+                        ++_p;
+                        _top = _p;
+                    }
                 default:
                     ++_p;
                 }
             }
-            _argv.emplace_back(_top, _p);
+            if (_space_arg.empty()) {
+                _argv.emplace_back(_top, _p);
+            }
+            else {
+                _argv.push_back(_space_arg + std::string(_top, _p));
+            }
         }
     }
 };

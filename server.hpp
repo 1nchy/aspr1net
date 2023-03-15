@@ -42,7 +42,7 @@ protected:
 
 private:
     static void process_input_buffer(client_t* _c);
-    static void process_command(client_t* _c);
+    static void process_command(ae_event_loop* _l, client_t* _c);
 
 public:
 struct client_t {
@@ -67,6 +67,7 @@ struct command_t {
     // char* _name; // name of command
     command_proc_t* _proc; // implement of command
     int _arity; // number of argument (!= 0) (+n: argc = n; -n: argc >= n)
+    bool _reply; // 0: no reply; 1: reply
 };
 // extern const std::unordered_map<const char*, command_t> _s_command_table;
 namespace command {
@@ -75,6 +76,7 @@ void get_command(server_t::client_t* _c);
 void set_command(server_t::client_t* _c);
 void file_send_command(server_t::client_t* _c);
 void file_recv_command(server_t::client_t* _c);
+void done_command(server_t::client_t* _c);
 };
 
 #endif // _ASP_SERVER_HPP_

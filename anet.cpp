@@ -227,7 +227,7 @@ static int anetCreateSocket(char *err, int domain) {
 #define ANET_CONNECT_NONE 0
 #define ANET_CONNECT_NONBLOCK 1
 #define ANET_CONNECT_BE_BINDING 2 /* Best effort binding. */
-static int anetTcpGenericConnect(char *err, char *addr, int port, char *source_addr, int flags) {
+static int anetTcpGenericConnect(char *err, const char *addr, int port, char *source_addr, int flags) {
     int s = ANET_ERR, rv;
     char portstr[6];  /* strlen("65535") + 1; */
     struct addrinfo hints, *servinfo, *bservinfo, *p, *b;
@@ -310,19 +310,19 @@ end:
     }
 }
 
-int anetTcpConnect(char *err, char *addr, int port) {
+int anetTcpConnect(char *err, const char *addr, int port) {
     return anetTcpGenericConnect(err, addr, port, NULL, ANET_CONNECT_NONE);
 }
 
-int anetTcpNonBlockConnect(char *err, char *addr, int port) {
+int anetTcpNonBlockConnect(char *err, const char *addr, int port) {
     return anetTcpGenericConnect(err, addr, port, NULL, ANET_CONNECT_NONBLOCK);
 }
 
-int anetTcpNonBlockBindConnect(char *err, char *addr, int port, char *source_addr) {
+int anetTcpNonBlockBindConnect(char *err, const char *addr, int port, char *source_addr) {
     return anetTcpGenericConnect(err, addr, port, source_addr, ANET_CONNECT_NONBLOCK);
 }
 
-int anetTcpNonBlockBestEffortBindConnect(char *err, char *addr, int port, char *source_addr) {
+int anetTcpNonBlockBestEffortBindConnect(char *err, const char *addr, int port, char *source_addr) {
     return anetTcpGenericConnect(err, addr, port, source_addr, ANET_CONNECT_NONBLOCK | ANET_CONNECT_BE_BINDING);
 }
 
